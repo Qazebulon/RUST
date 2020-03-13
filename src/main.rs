@@ -1,11 +1,13 @@
 extern crate rand;
+extern crate regex;
 
 use rand::Rng;
 use std::io::{self, Write};
+use regex::Regex;
 
 // struct Die {
-//     sides: i8,
-//     modifier: i8,
+//     sides: u64,
+//     modifier: u64,
 // }
 
 // Project Trello: https://trello.com/b/8QqyFxg6/rust
@@ -14,19 +16,19 @@ fn main() {
     loop {
         let input = input();
         match input.trim() {
-            "d2+4" => formatted_roll(2,4),
-            "d2" => formatted_roll(2,0),
-            "d4" => formatted_roll(4,0),
-            "d6" => formatted_roll(6,0),
-            "d8" => formatted_roll(8,0),
-            "d10" => formatted_roll(10,0),
-            "d12" => formatted_roll(12,0),
-            "d20" | "r" => formatted_roll(20,0),
-            "d100" => formatted_roll(100,0),
+            // "d2+4" => formatted_roll(2,4),
+            // "d2" => formatted_roll(2,0),
+            // "d4" => formatted_roll(4,0),
+            // "d6" => formatted_roll(6,0),
+            // "d8" => formatted_roll(8,0),
+            // "d10" => formatted_roll(10,0),
+            // "d12" => formatted_roll(12,0),
+            // "d20" | "r" => formatted_roll(20,0),
+            // "d100" => formatted_roll(100,0),
             "q" => break,
             "?" => help(),
             "" => (),
-            _ => println!("! Invalid Command (enter ? for help)"),
+            _ => process_other_input(input)
         }
     }
 }
@@ -52,12 +54,36 @@ fn input() -> std::string::String {
     return input_string;
 }
 
-fn formatted_roll(sides: i8, modifier: i8) {
+fn formatted_roll(sides: u64, modifier: u64) {
     println!("> You rolled a: {}", roll(sides, modifier));
 }
 
-fn roll(sides: i8, modifier: i8) -> i8 {
+fn roll(sides: u64, modifier: u64) -> u64 {
     let mut rng = rand::thread_rng();
     let roll = rng.gen_range(1, sides+1); //lower bound inclusive; upper bound exclusive
     return roll + modifier;
+}
+
+fn roll_n_dice(sides: u64, number_of_dice: u64) -> u64 {
+    (0..number_of_dice).fold(0, |sum, val| {
+        sum + roll(sides, 0)
+    })
+}
+
+fn process_other_input(input: String) {
+    let d_regex = Regex::new("d").unwrap();
+    if d_regex.is_match(&input) {
+        parse_dice_roll(input);
+    } else {
+        println!("! Invalid Command (enter ? for help)");
+    };
+}
+fn parse_dice_roll(input: String) {
+    let die_regex = Regex::new(r"(\d+)d(\d+)").unwrap();
+    for cap in die_regex.captures_iter(&input) {
+        let number_of_dice = cap[1].parse::<u64>().unwrap();
+        let sides_of_dice = cap[2].parse::<u64>().unwrap();
+        let total = roll_n_dice(sides_of_dice, number_of_dice);
+        println!("> You rolled a: {}", total);
+    }
 }
