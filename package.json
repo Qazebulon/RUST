@@ -1,0 +1,8 @@
+{
+    "scripts": {
+      "start": "cargo run",
+      "build": "cargo build"
+    },
+    "dependencies": {},
+    "devDependencies": {}
+  }
